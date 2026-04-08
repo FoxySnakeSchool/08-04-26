@@ -1,0 +1,6 @@
+/boam_result.json
+/ted-europa_request.json
+/tep-europa_response.json
+
+node_modules/
+.env
