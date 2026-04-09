@@ -171,6 +171,29 @@ CREATE TABLE IF NOT EXISTS log_metier (
 
 
 -- ----------------------------------------------------------------------------
+-- audit_marche : journal d'audit des insertions dans la table marche
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS audit_marche (
+    id              BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    id_marche       INT UNSIGNED     NOT NULL,
+    id_externe      VARCHAR(100)     NOT NULL,
+    etat            VARCHAR(20),
+    titre           VARCHAR(255)     NOT NULL,
+    nom_acheteur    VARCHAR(255),
+    departement     CHAR(3),
+    type_marche     VARCHAR(50),
+    score_pertinence TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    action          VARCHAR(20)      NOT NULL DEFAULT 'INSERT',
+    effectue_par    VARCHAR(100)     DEFAULT 'SYSTEM',
+    effectue_le     DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_audit_marche_id     (id_marche),
+    INDEX idx_audit_marche_date   (effectue_le),
+    INDEX idx_audit_marche_action (action)
+) ENGINE=InnoDB;
+
+
+-- ----------------------------------------------------------------------------
 -- notification : alertes générées pour les marchés à haute priorité
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS notification (

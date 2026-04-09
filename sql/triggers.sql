@@ -6,8 +6,9 @@
 --   1. trg_marche_before_insert    — validation et normalisation avant insertion
 --   2. trg_marche_before_update    — contrôles avant modification
 --   3. trg_marche_after_insert     — log technique de traçabilité
---   4. trg_marche_after_update     — log métier sur changement de /score
+--   4. trg_marche_after_update     — log métier sur changement de score
 --   5. trg_notification_after_insert — log technique à chaque alerte créée
+--   6. trg_marche_after_insert_audit — audit de chaque insertion dans audit_marche
 --
 -- Note : niveau_priorite et hash_contenu étant des colonnes GENERATED ALWAYS,
 --        elles ne peuvent pas être assignées dans un trigger (MySQL les gère seul).
@@ -192,6 +193,31 @@ BEGIN
             ' | type=', NEW.type,
             ' | destinataire=', NEW.destinataire
         )
+    );
+END$$
+
+
+-- =============================================================================
+-- TRIGGER 6 : trg_marche_after_insert_audit
+-- Moment  : AFTER INSERT sur marche
+-- Rôle    : Enregistre chaque insertion dans la table audit_marche.
+-- Note    : MySQL autorise plusieurs AFTER INSERT triggers sur la même table
+--           (depuis MySQL 5.7+ avec FOLLOWS).
+-- =============================================================================
+DROP TRIGGER IF EXISTS trg_marche_after_insert_audit$$
+CREATE TRIGGER trg_marche_after_insert_audit
+AFTER INSERT ON marche
+FOR EACH ROW
+FOLLOWS trg_marche_after_insert
+BEGIN
+    INSERT INTO audit_marche (
+        id_marche, id_externe, etat, titre, nom_acheteur,
+        departement, type_marche, score_pertinence,
+        action, effectue_par
+    ) VALUES (
+        NEW.id, NEW.id_externe, NEW.etat, NEW.titre, NEW.nom_acheteur,
+        NEW.departement, NEW.type_marche, NEW.score_pertinence,
+        'INSERT', 'trigger:trg_marche_after_insert_audit'
     );
 END$$
 
